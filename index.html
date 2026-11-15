@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cari Harga - Toko Wijaya Plastik</title>
+<style>
+:root{--hijau:#1b7f3b;--bg:#f2f5f2}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:#111}
+header{position:sticky;top:0;background:var(--hijau);color:#fff;padding:10px 12px 12px;z-index:9;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+h1{font-size:16px;margin:0 0 8px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tools{display:flex;gap:8px}
+.tools button{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:5px 9px;font-size:13px}
+input#q{width:100%;font-size:20px;padding:13px 14px;border-radius:12px;border:0;outline:0;color:#111}
+input#q::placeholder{color:#8a8a8a;font-size:16px}
+.hint{font-size:12px;opacity:.92;margin-top:6px}
+main{padding:10px 8px 96px;max-width:100vw}
+.card{background:#fff;border-radius:14px;padding:10px 13px 8px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.07);overflow:hidden;cursor:pointer}
+.card:active{background:#f7faf7}
+.n{font-size:18px;font-weight:700;line-height:1.25;word-break:break-word}
+.k{font-size:12px;color:#777;margin-top:2px}
+.row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 8px;padding:5px 0;border-top:1px dashed #e3e3e3}
+.row:first-of-type{border-top:0}
+.s{font-size:15px;color:#333;flex:1 1 40%;min-width:0;word-break:break-word}
+.h{font-size:19px;font-weight:800;color:var(--hijau);white-space:normal;text-align:right;margin-left:auto}
+.h small{font-size:11px;color:#777;font-weight:600;margin-left:6px}
+.empty{padding:26px 16px;text-align:center;color:#666;font-size:16px;line-height:1.5}
+footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;font-size:11px;color:#666;padding:6px 10px;text-align:center}
+#add{position:fixed;right:14px;bottom:46px;width:56px;height:56px;border-radius:50%;border:0;background:var(--hijau);color:#fff;font-size:30px;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:20}
+#modal3{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:60;padding:12px;overflow:auto}
+#modal3.on{display:block}
+#modal3 input{font-size:14px}
+.sync{font-size:11px;padding:2px 7px;border-radius:20px;background:rgba(255,255,255,.2);margin-left:6px}
+.sync.ok{background:#0a5d2a}
+.sync.bad{background:#8a1c1c}
+#modal2{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:50;padding:12px;overflow:auto}
+#modal2.on{display:block}
+.acts button.grey{background:#eee;color:#333}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:40;padding:12px;overflow:auto}
+#modal.on{display:block}
+.sheet{background:#fff;border-radius:16px;padding:14px;max-width:560px;margin:0 auto}
+.sheet h2{margin:0 0 10px;font-size:17px}
+label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
+.sheet input{width:100%;font-size:17px;padding:10px 11px;border:1px solid #ccc;border-radius:10px;color:#111}
+.srow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.srow input.u{flex:1 1 34%}
+.srow input.p{flex:1 1 26%;text-align:right}
+.srow input.p2{flex:1 1 26%;text-align:right}
+.srow button{border:0;background:#f3f3f3;color:#b00;border-radius:9px;width:32px;height:34px;font-size:16px}
+.acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.acts button{flex:1 1 auto;border:0;border-radius:11px;padding:12px 10px;font-size:15px;font-weight:700}
+#save{background:var(--hijau);color:#fff}
+#cancel{background:#eee;color:#333}
+#del{background:#fdecec;color:#b00}
+#addRow{width:100%;border:1px dashed #bbb;background:#fff;border-radius:10px;padding:9px;font-size:14px;color:#333;margin-top:4px}
+@media print{
+ body{background:#fff}
+ header{position:static;background:#fff;color:#000;padding:0 0 6px;box-shadow:none}
+ h1{font-size:14px}
+ input#q,.hint,footer,#add,.tools{display:none}
+ main{padding:0;column-count:2;column-gap:8mm}
+ .card{box-shadow:none;border-bottom:1px solid #ccc;border-radius:0;padding:2px 0 4px;margin:0 0 4px;break-inside:avoid}
+ .n{font-size:10pt}.k{font-size:7.5pt}.s{font-size:8.5pt}.h{font-size:9pt}
+ .row{padding:1px 0}
+}
+</style></head>
+<body>
+<header>
+  <h1><span>Cari Harga &mdash; Toko Wijaya</span>
+    <span class="tools"><button id="bagi" title="Kirim/terima data antar HP">&#8644; data</button><button id="cfg" title="Sambungkan ke Google Sheets (otomatis)">&#9881;</button><button id="reset" title="Kembalikan ke daftar asli">&#8634; asli</button></span>
+  </h1>
+  <input id="q" placeholder="Ketik nama barang..." autocomplete="off" inputmode="search">
+  <div class="hint" id="hint"></div><span id="sync" class="sync" style="display:none">off</span>
+</header>
+<main id="list"></main>
+<button id="add" title="Tambah barang baru">&plus;</button>
+<footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
+
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets)</h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
+  <div class="sheet">
+    <h2>Pindah data ke HP lain</h2>
+    <p style="font-size:13px;color:#555;margin:0 0 8px">Tekan <b>Salin</b> di HP ini, kirim teksnya ke HP kedua (WhatsApp/chat), lalu di HP kedua tekan <b>Tempel &amp; Simpan</b>.</p>
+    <textarea id="dtext" style="width:100%;height:150px;font-size:12px;font-family:monospace;border:1px solid #ccc;border-radius:10px;padding:8px"></textarea>
+    <div class="acts">
+      <button id="copy">Salin</button>
+      <button id="paste">Tempel &amp; Simpan</button>
+      <button id="closeData" class="grey">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal">
+  <div class="sheet">
+    <h2>Ubah barang</h2>
+    <label>Nama barang</label>
+    <input id="f-nama" placeholder="cth: Mika 5 VIP">
+    <label>Keterangan (kemasan)</label>
+    <input id="f-ket" placeholder="cth: 15 pack / 1500">
+    <label>Ukuran &amp; harga</label>
+    <div id="rows"></div>
+    <button id="addRow" type="button">+ tambah ukuran</button>
+    <div class="acts">
+      <button id="save">Simpan</button>
+      <button id="cancel">Batal</button>
+      <button id="del">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = [{"nama": "Alfa 600 ml", "ket": "", "sizes": [{"u": "", "j1": 4000, "j2": 4000}]}, {"nama": "Asoi Ampera Hitam", "ket": "1 sak / 100 pcs", "sizes": [{"u": 15, "j1": 5780, "j2": 6280}, {"u": 17, "j1": 5780, "j2": 6280}, {"u": 19, "j1": 5780, "j2": 6280}, {"u": 24, "j1": 5780, "j2": 6280}, {"u": 28, "j1": 5780, "j2": 6280}, {"u": 35, "j1": 5780, "j2": 6280}]}, {"nama": "Asoi Ampera Putih", "ket": "1 sak / 80 pcs", "sizes": [{"u": 15, "j1": 12000, "j2": 12000}, {"u": 17, "j1": 12000, "j2": 12000}, {"u": 19, "j1": 12000, "j2": 12000}, {"u": 24, "j1": 12000, "j2": 12000}, {"u": 28, "j1": 12000, "j2": 12000}, {"u": 35, "j1": 12000, "j2": 12000}, {"u": 40, "j1": 12000, "j2": 12000}, {"u": 50, "j1": 13000, "j2": 13000}]}, {"nama": "Asoi AOG Hitam", "ket": "1 sak / 160 pcs", "sizes": [{"u": 15, "j1": 5625, "j2": 6125}, {"u": 24, "j1": 5625, "j2": 6125}, {"u": 26, "j1": 5625, "j2": 6125}]}, {"nama": "Asoi AOG Warna", "ket": "1 sak / 160 pcs", "sizes": [{"u": 15, "j1": 5656, "j2": 6156}, {"u": 19, "j1": 5656, "j2": 6156}, {"u": 24, "j1": 5656, "j2": 6156}, {"u": 28, "j1": 5656, "j2": 6156}, {"u": 35, "j1": 5656, "j2": 6156}]}, {"nama": "Asoi Belido", "ket": "1 sak / 300 pcs", "sizes": [{"u": 15, "j1": 5000, "j2": 5500}, {"u": 19, "j1": 5000, "j2": 5500}, {"u": 23, "j1": 5000, "j2": 5500}]}, {"nama": "Asoy Santer Bening", "ket": "1 sak / 80 pcs", "sizes": [{"u": 15, "j1": 12375, "j2": 12875}, {"u": 19, "j1": 12375, "j2": 12875}, {"u": 24, "j1": 12375, "j2": 12875}, {"u": 28, "j1": 12375, "j2": 12875}, {"u": 35, "j1": 12375, "j2": 12875}]}, {"nama": "Botol Cabe 200 ml", "ket": "1 pack / 100", "sizes": [{"u": "", "j1": 80000, "j2": 80000}]}, {"nama": "Botol Cantik 350 ml", "ket": "1 pack / 77", "sizes": [{"u": "", "j1": 78450, "j2": 78500}]}, {"nama": "Botol Leon 200 ml", "ket": "1 pack / 100", "sizes": [{"u": "", "j1": 98000, "j2": 98000}]}, {"nama": "Dus Caesar TPS", "ket": "pack", "sizes": [{"u": "18 x 18", "j1": 52650, "j2": 53000}, {"u": "20 x 20", "j1": 60200, "j2": 60500}, {"u": "22 x 22", "j1": 65600, "j2": 66000}, {"u": "25 x 25", "j1": 87200, "j2": 87500}]}, {"nama": "Dus Draco TPS", "ket": "pack", "sizes": [{"u": "20 x 20", "j1": 60200, "j2": 60500}, {"u": "22 x 22", "j1": 74250, "j2": 74500}]}, {"nama": "Dus Gretel GS Brown", "ket": "1 pack / 100 lbr", "sizes": [{"u": "12 x 12", "j1": 56000, "j2": 56000}, {"u": "12 x 14", "j1": 56500, "j2": 56500}, {"u": "12 x 16", "j1": 62000, "j2": 62000}, {"u": "18 x 18", "j1": 110000, "j2": 110000}]}, {"nama": "Dus Gretel Martabak GS Brown", "ket": "500 lbr", "sizes": [{"u": "13,5 x 21", "j1": 95000, "j2": 95000}]}, {"nama": "Dus Gretel TPS", "ket": "pack", "sizes": [{"u": "20 x 20", "j1": 67250, "j2": 67500}, {"u": "22 x 22", "j1": 74250, "j2": 74500}, {"u": "25 x 25", "j1": 101250, "j2": 101500}]}, {"nama": "Dus Mantap Donut GS", "ket": "400 lbr", "sizes": [{"u": "27 x 5 x 9,5 isi 3", "j1": 119000, "j2": 119000}, {"u": "27 x 18,5 isi 6", "j1": 167700, "j2": 167700}]}, {"nama": "Dus Mantap GS", "ket": "500 lbr", "sizes": [{"u": "13,5 x 21", "j1": 88000, "j2": 90000}]}, {"nama": "Dus Polos TPS", "ket": "20 pack / 1000", "sizes": [{"u": "20 x 20", "j1": 63450, "j2": 63500}, {"u": "22 x 22", "j1": 70200, "j2": 70500}, {"u": "25 x 25", "j1": 95600, "j2": 96000}]}, {"nama": "Dus SM Donut Plus Prime", "ket": "500 lbr", "sizes": [{"u": "27,5 x 9,5 isi 3", "j1": 25280, "j2": 25280}, {"u": "27,5 x 18,5 isi 6", "j1": 36280, "j2": 36280}]}, {"nama": "Garpu Putih", "ket": "1 dus / 120", "sizes": [{"u": "120", "j1": 4708, "j2": 5208}]}, {"nama": "Gelas Aqua", "ket": "1 dus / 40", "sizes": [{"u": "220 ml", "j1": 8000, "j2": 8500}]}, {"nama": "Gelas Oval 10 roll", "ket": "10 roll / isi 10", "sizes": [{"u": "12 Oz", "j1": 21500, "j2": 22000}, {"u": "14 Oz", "j1": 21500, "j2": 22000}, {"u": "16 Oz", "j1": 21500, "j2": 22000}]}, {"nama": "Gelas Oval 5 roll", "ket": "5 roll / isi 50", "sizes": [{"u": "14 Oz", "j1": 21500, "j2": 22000}, {"u": "16 Oz", "j1": 21500, "j2": 22000}, {"u": "18 Oz", "j1": 21500, "j2": 22000}, {"u": "22 Oz", "j1": 21500, "j2": 22000}]}, {"nama": "Gelas Slim", "ket": "5 roll / 25", "sizes": [{"u": "18 Oz", "j1": 21500, "j2": 22000}, {"u": "22 Oz", "j1": 21500, "j2": 22000}]}, {"nama": "Gelas Ulir", "ket": "1 dus / 40", "sizes": [{"u": "130 ml", "j1": 7625, "j2": 8125}, {"u": "160 ml", "j1": 7625, "j2": 8125}]}, {"nama": "Golda", "ket": "", "sizes": [{"u": "", "j1": 5000, "j2": 5000}]}, {"nama": "HD Belido 1", "ket": "1 sak / 150", "sizes": [{"u": "150", "j1": 10500, "j2": 11000}]}, {"nama": "HD Belido 1/2", "ket": "1 sak / 150", "sizes": [{"u": "150", "j1": 10500, "j2": 11000}]}, {"nama": "HD Belido 1/4", "ket": "1 sak / 150", "sizes": [{"u": "150", "j1": 10500, "j2": 11000}]}, {"nama": "HD Belido 2", "ket": "1 sak / 150", "sizes": [{"u": "150", "j1": 10500, "j2": 11000}]}, {"nama": "Isolasi SNS", "ket": "satuan Rp2.200", "sizes": [{"u": "", "j1": 3000, "j2": 3000}]}, {"nama": "Jaxin Pop Ice", "ket": "1 roll", "sizes": [{"u": "14 Oz", "j1": 11500, "j2": 12000}]}, {"nama": "Karet Gelang KLC", "ket": "1 coly / 30", "sizes": [{"u": "3 kg", "j1": 7250, "j2": 7750}]}, {"nama": "Kertas Nasi Antarco", "ket": "1 coly / 10", "sizes": [{"u": "", "j1": 39500, "j2": 40000}]}, {"nama": "Kertas Nasi Monpera", "ket": "1 coly / 25", "sizes": [{"u": "", "j1": 26000, "j2": 26500}]}, {"nama": "Lasegar botol 500 ml", "ket": "", "sizes": [{"u": "", "j1": 9000, "j2": 9000}]}, {"nama": "Lunch Box M", "ket": "2 pack / 200", "sizes": [{"u": "200 lbr", "j1": 52000, "j2": 52000}]}, {"nama": "Lunch Box S", "ket": "2 pack / 200", "sizes": [{"u": "200 lbr", "j1": 39000, "j2": 39000}]}, {"nama": "Mika 1A Tehno", "ket": "1 coly / 500", "sizes": [{"u": "10 pack", "j1": 55000, "j2": 55000}]}, {"nama": "Mika 2A Tehno", "ket": "1 coly / 1000", "sizes": [{"u": "20 pack", "j1": 30000, "j2": 30000}]}, {"nama": "Mika 3 VIP", "ket": "1 coly / 2000", "sizes": [{"u": "20 pack x 100 bh", "j1": 25900, "j2": 26000}]}, {"nama": "Mika 4 VIP", "ket": "1 coly / 2000", "sizes": [{"u": "20 pack x 100 bh", "j1": 19000, "j2": 19000}]}, {"nama": "Mika 5 VIP", "ket": "15 pack / 1500", "sizes": [{"u": "", "j1": 12934, "j2": 13000}]}, {"nama": "Mika 6 VIP", "ket": "25 pack / 2500", "sizes": [{"u": "", "j1": 9640, "j2": 10000}]}, {"nama": "Mika Sifon 18", "ket": "1 coly / 500 lbr", "sizes": [{"u": "10 pack x 50 lbr", "j1": 54000, "j2": 54000}]}, {"nama": "Mika Sifon 20", "ket": "1 coly / 250 lbr", "sizes": [{"u": "5 pack x 50 lbr", "j1": 58000, "j2": 58000}]}, {"nama": "Mika Sifon 25", "ket": "1 coly / 100 lbr", "sizes": [{"u": "2 pack x 50 lbr", "j1": 140000, "j2": 140000}]}, {"nama": "MM Pop Ice", "ket": "1 roll", "sizes": [{"u": "10 Oz", "j1": 11500, "j2": 12000}, {"u": "12 Oz", "j1": 11500, "j2": 12000}, {"u": "16 Oz", "j1": 11500, "j2": 12000}]}, {"nama": "Pipet Gajah", "ket": "1 ball / 50", "sizes": [{"u": "50", "j1": 11200, "j2": 11700}]}, {"nama": "Pipet LOS", "ket": "1 ball / 20", "sizes": [{"u": "20", "j1": 10125, "j2": 10625}]}, {"nama": "Pipet Pop Ice Kuda Laut", "ket": "1 ball / 120", "sizes": [{"u": "120", "j1": 4125, "j2": 4625}]}, {"nama": "PP 20 x 40 x 0,3", "ket": "1 coly / 25", "sizes": [{"u": "25 bks", "j1": 45000, "j2": 45500}]}, {"nama": "PP 20 x 40 x 0,6", "ket": "20 kg / 20", "sizes": [{"u": "20 bks", "j1": 45000, "j2": 45500}]}, {"nama": "PP 60 x 100 x 0,3", "ket": "1 coly / 25", "sizes": [{"u": "25 bks", "j1": 45000, "j2": 45500}]}, {"nama": "Pulpy", "ket": "", "sizes": [{"u": "", "j1": 7000, "j2": 7000}]}, {"nama": "Sendok Putih", "ket": "1 dus / 120", "sizes": [{"u": "120", "j1": 4708, "j2": 5208}]}, {"nama": "Streaform 03", "ket": "3 coly", "sizes": [{"u": "", "j1": 45000, "j2": 45000}]}, {"nama": "Tali Rafia Hitam", "ket": "1 coly", "sizes": [{"u": "500 gr", "j1": 9667, "j2": 10167}, {"u": "1000 gr", "j1": 17667, "j2": 18167}]}, {"nama": "Teh Pucuk / Nipis Madu", "ket": "", "sizes": [{"u": "", "j1": 5000, "j2": 5000}]}, {"nama": "Tusuk Sate Duren", "ket": "1/2 dus / 20", "sizes": [{"u": "", "j1": 14250, "j2": 14750}]}, {"nama": "Tusuk Sate HKM", "ket": "1 dus / 40", "sizes": [{"u": "", "j1": 13000, "j2": 13500}]}];
+const KEY = 'tokoWijayaStore_v1';
+const $list = document.getElementById('list'), $q = document.getElementById('q'), $hint = document.getElementById('hint');
+const $modal = document.getElementById('modal'), $rows = document.getElementById('rows');
+const rp = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+const norm = s => String(s).toLowerCase().replace(/asi|asy|asoi|aoy|ampua/g,'asoy').replace(/[^a-z0-9 ]/g,' ');
+
+let STORE;
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function sortStore(){
+  STORE.sort((a,b)=> String(a.nama||'').localeCompare(String(b.nama||''),'id',{sensitivity:'base',numeric:true}));
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    STORE = raw ? JSON.parse(raw) : clone(BASE);
+    if(!Array.isArray(STORE)) STORE = clone(BASE);
+  }catch(e){ STORE = clone(BASE); }
+}
+function persist(){
+  try{ localStorage.setItem(KEY, JSON.stringify(STORE)); }
+  catch(e){ alert('HP ini tidak mengizinkan penyimpanan. Perubahan hanya sementara.'); }
+}
+load();
+
+let editingIdx = -1;
+
+function render(filter){
+  const f = norm(filter||'').trim().split(/\s+/).filter(Boolean);
+  const out = STORE.map((it,i)=>({it,i})).filter(({it})=>{
+    const hay = norm(it.nama + ' ' + it.sizes.map(s=>s.u).join(' '));
+    return f.every(w=> hay.includes(w));
+  });
+  $hint.textContent = (filter ? out.length + ' barang cocok' : out.length + ' barang')
+    + '  \u00b7  ketuk barang untuk ubah';
+  if(!out.length){
+    $list.innerHTML = '<div class="empty">Barang tidak ditemukan.<br>Coba: <b>mika</b>, <b>dus</b>, <b>gelas</b>.</div>';
+    return;
+  }
+  $list.innerHTML = out.map(({it,i})=>{
+    const rows = (it.sizes||[]).map(s=>{
+      const alt = (s.j2 && s.j2!==s.j1) ? `<small>${rp(s.j2)}</small>` : '';
+      return `<div class="row"><div class="s">${s.u || '&nbsp;'}</div><div class="h">${rp(s.j1)}${alt}</div></div>`;
+    }).join('');
+    return `<div class="card" data-i="${i}"><div class="n">${it.nama}</div>${it.ket?`<div class="k">${it.ket}</div>`:''}${rows}</div>`;
+  }).join('');
+}
+
+function openEdit(i){
+  editingIdx = i;
+  const it = i>=0 ? STORE[i] : {nama:'', ket:'', sizes:[{u:'',j1:'',j2:''}]};
+  document.getElementById('f-nama').value = it.nama || '';
+  document.getElementById('f-ket').value = it.ket || '';
+  $rows.innerHTML = '';
+  (it.sizes && it.sizes.length ? it.sizes : [{u:'',j1:'',j2:''}]).forEach(addRow);
+  document.getElementById('del').style.display = i>=0 ? 'block' : 'none';
+  document.querySelector('.sheet h2').textContent = i>=0 ? 'Ubah barang' : 'Barang baru';
+  $modal.classList.add('on');
+}
+function closeEdit(){ $modal.classList.remove('on'); editingIdx = -1; }
+
+function addRow(s){
+  s = s || {};
+  const div = document.createElement('div');
+  div.className = 'srow';
+  div.innerHTML = `<input class="u" placeholder="ukuran" value="${s.u ?? ''}">
+                   <input class="p" inputmode="numeric" placeholder="harga jual" value="${s.j1 ?? ''}">
+                   <input class="p2" inputmode="numeric" placeholder="harga 2" value="${s.j2 ?? ''}">
+                   <button type="button">\u00d7</button>`;
+  div.querySelector('button').addEventListener('click', ()=> div.remove());
+  $rows.appendChild(div);
+}
+
+$list.addEventListener('click', e=>{
+  const c = e.target.closest('.card');
+  if(c) openEdit(Number(c.getAttribute('data-i')));
+});
+document.getElementById('add').addEventListener('click', ()=> openEdit(-1));
+document.getElementById('addRow').addEventListener('click', ()=> addRow());
+document.getElementById('cancel').addEventListener('click', closeEdit);
+$modal.addEventListener('click', e=>{ if(e.target === $modal) closeEdit(); });
+
+document.getElementById('save').addEventListener('click', ()=>{
+  const nama = document.getElementById('f-nama').value.trim();
+  if(!nama){ alert('Nama barang wajib diisi.'); return; }
+  const ket = document.getElementById('f-ket').value.trim();
+  const sizes = [...$rows.querySelectorAll('.srow')].map(r=>{
+    const u = r.querySelector('.u').value.trim();
+    const p1 = Number(String(r.querySelector('.p').value).replace(/[^0-9]/g,'')) || 0;
+    const p2 = Number(String(r.querySelector('.p2').value).replace(/[^0-9]/g,'')) || p1;
+    return {u, j1:p1, j2:p2};
+  }).filter(s=> s.j1 > 0);
+  if(!sizes.length){ alert('Isi minimal satu harga.'); return; }
+  const rec = {nama, ket, sizes};
+  if(editingIdx >= 0) STORE[editingIdx] = rec;
+  else STORE.push(rec);
+  sortStore();
+  persist(); pushRemote(); closeEdit(); $q.value=''; render('');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+document.getElementById('del').addEventListener('click', ()=>{
+  if(editingIdx < 0) return;
+  const nm = STORE[editingIdx].nama;
+  if(!confirm('Hapus barang "' + nm + '" dari daftar?')) return;
+  STORE.splice(editingIdx, 1);
+  sortStore();
+  persist(); pushRemote(); closeEdit(); render($q.value);
+});
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  if(!confirm('Kembalikan semua nama & harga ke daftar asli? Semua perubahan di HP ini akan hilang.')) return;
+  STORE = clone(BASE); persist(); pushRemote(); $q.value=''; render('');
+});
+
+
+function encodeStore(){
+  const NL = String.fromCharCode(10);
+  return STORE.map(it=>{
+    const rows=(it.sizes||[]).map(s=>[s.u??'',s.j1??'',s.j2??''].join('=')).join(';');
+    return (it.nama||'')+'|'+(it.ket||'')+'|'+rows;
+  }).join(NL);
+}
+function decodeStore(txt){
+  const out=[];
+  txt.split(new RegExp('[\r\n]+')).forEach(line=>{
+    line=line.trim();
+    if(!line) return;
+    const p=line.split('|');
+    if(p.length<2) return;
+    const sizes=(p[2]||'').split(';').filter(Boolean).map(r=>{
+      const a=r.split('=');
+      const n=x=>Number(String(x).replace(/[^0-9]/g,''))||0;
+      return {u:a[0]||'', j1:n(a[1]), j2:n(a[2])||n(a[1])};
+    }).filter(s=>s.j1>0);
+    if(sizes.length) out.push({nama:p[0].trim(), ket:(p[1]||'').trim(), sizes});
+  });
+  return out;
+}
+const $m2=document.getElementById('modal2'), $dt=document.getElementById('dtext');
+document.getElementById('bagi').addEventListener('click', ()=>{
+  $dt.value = encodeStore();
+  $m2.classList.add('on');
+});
+document.getElementById('closeData').addEventListener('click', ()=> $m2.classList.remove('on'));
+$m2.addEventListener('click', e=>{ if(e.target===$m2) $m2.classList.remove('on'); });
+document.getElementById('copy').addEventListener('click', ()=>{
+  $dt.select(); $dt.setSelectionRange(0, $dt.value.length);
+  let ok=false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  if(!ok && navigator.share){
+    navigator.share({text:$dt.value}).catch(()=>{});
+    return;
+  }
+  alert(ok ? 'Teks sudah disalin. Kirim ke HP kedua lewat chat.' : 'Tekan lama kotak teks lalu pilih Salin/Copy.');
+});
+document.getElementById('paste').addEventListener('click', ()=>{
+  const parsed = decodeStore($dt.value);
+  if(!parsed.length){ alert('Teks tidak dikenali. Pastikan menempel seluruh teks dari HP pertama.'); return; }
+  if(!confirm('Ganti daftar di HP ini dengan ' + parsed.length + ' barang dari HP pertama?')) return;
+  STORE = parsed; sortStore(); persist(); $m2.classList.remove('on'); $q.value=''; render('');
+  alert('Data dari HP pertama sudah dimuat: ' + parsed.length + ' barang.');
+});
+
+$q.addEventListener('input', ()=> render($q.value));
+render('');
+if(location.hash === '#demo' && STORE.length) openEdit(0);
+if(location.hash === '#test'){
+  const txt = encodeStore();
+  const back = decodeStore(txt);
+  const ok = back.length === STORE.length && back[0].nama === STORE[0].nama
+    && back[0].sizes.length === STORE[0].sizes.length;
+  document.title = 'UJI ' + (ok ? 'OK' : 'GAGAL') + ' ' + back.length;
+}
+</script>
+<script>
+
+
+// ===== sinkron otomatis ke Google Sheets (Apps Script) =====
+const RKEY = 'tokoWijayaRemoteUrl';
+let RURL = localStorage.getItem(RKEY) || '';
+let busy = false;
+const $sync = document.getElementById('sync');
+const $m3 = document.getElementById('modal3');
+
+function setSync(state, text){
+  $sync.style.display = RURL ? 'inline-block' : 'none';
+  $sync.className = 'sync' + (state ? ' ' + state : '');
+  $sync.textContent = text;
+}
+
+async function pullRemote(manual){
+  if(!RURL || busy) return;
+  busy = true;
+  try{
+    const r = await fetch(RURL + (RURL.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const txt = await r.text();
+    const arr = JSON.parse(txt);
+    if(Array.isArray(arr) && arr.length){
+      if(JSON.stringify(arr) !== JSON.stringify(STORE)){
+        STORE = arr; sortStore(); persist(); render($q.value);
+        setSync('ok', 'diperbarui');
+        setTimeout(()=> setSync('ok','online'), 2500);
+      } else {
+        setSync('ok', 'online');
+      }
+      if(manual) alert('Tersambung. Data di Sheet: ' + arr.length + ' barang.');
+    } else if(!arr || !arr.length) {
+      // Sheet masih kosong -> unggah data dari HP ini sebagai isi awal
+      await pushRemote();
+      setSync('ok','diunggah');
+      if(manual) alert('Tersambung, tapi Sheet masih kosong. Tekan Simpan di aplikasi untuk mengirim data pertama.');
+    }
+  }catch(e){
+    setSync('bad','gagal');
+    if(manual) alert('Gagal menyambung. Cek URL (harus berakhiran /exec) dan akses "Anyone".');
+  }finally{ busy = false; }
+}
+
+async function pushRemote(){
+  if(!RURL) return;
+  try{
+    await fetch(RURL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(STORE)});
+    setSync('ok','tersimpan');
+    setTimeout(()=> setSync('ok','online'), 2000);
+  }catch(e){ setSync('bad','gagal kirim'); }
+}
+
+document.getElementById('cfg').addEventListener('click', ()=>{
+  document.getElementById('f-url').value = RURL;
+  document.getElementById('cfgMsg').textContent = RURL ? 'Sinkron aktif.' : 'Belum tersambung. Aplikasi jalan mandiri di HP ini.';
+  $m3.classList.add('on');
+});
+document.getElementById('closeCfg').addEventListener('click', ()=> $m3.classList.remove('on'));
+$m3.addEventListener('click', e=>{ if(e.target===$m3) $m3.classList.remove('on'); });
+document.getElementById('saveUrl').addEventListener('click', ()=>{
+  const v = document.getElementById('f-url').value.trim();
+  RURL = v; localStorage.setItem(RKEY, v);
+  setSync(v? 'ok':'', v? 'online':'off');
+  document.getElementById('cfgMsg').textContent = v ? 'URL disimpan. Menguji koneksi...' : 'Sinkron dimatikan.';
+  if(v) pullRemote(true);
+});
+document.getElementById('testUrl').addEventListener('click', ()=> pullRemote(true));
+document.getElementById('clearUrl').addEventListener('click', ()=>{
+  RURL=''; localStorage.removeItem(RKEY); setSync('', 'off');
+  document.getElementById('f-url').value='';
+  document.getElementById('cfgMsg').textContent='Sinkron dimatikan. Aplikasi jalan mandiri di HP ini.';
+});
+
+setSync(RURL ? 'ok' : '', RURL ? 'online' : 'off');
+if(RURL){ pullRemote(false); setInterval(()=> pullRemote(false), 8000); }
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && RURL) pullRemote(false); });
+
+
+</script>
+</body></html>
