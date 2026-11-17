@@ -78,7 +78,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 <button id="add" title="Tambah barang baru">&plus;</button>
 <footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
 
-<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets)</h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v5</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
   <div class="sheet">
     <h2>Pindah data ke HP lain</h2>
     <p style="font-size:13px;color:#555;margin:0 0 8px">Tekan <b>Salin</b> di HP ini, kirim teksnya ke HP kedua (WhatsApp/chat), lalu di HP kedua tekan <b>Tempel &amp; Simpan</b>.</p>
@@ -204,12 +204,16 @@ document.getElementById('save').addEventListener('click', ()=>{
   }).filter(s=> s.j1 > 0);
   if(!sizes.length){ alert('Isi minimal satu harga.'); return; }
   const rec = {nama, ket, sizes};
-  if(editingIdx >= 0) STORE[editingIdx] = rec;
-  else STORE.push(rec);
-  sortStore();
-  persist(); pushRemote(); closeEdit(); $q.value=''; render('');
-  window.scrollTo({top:0, behavior:'smooth'});
-});
+    if(editingIdx >= 0) STORE[editingIdx] = rec;
+    else STORE.push(rec);
+    // Simpan TIDAK mengosongkan pencarian / posisi gulir: Olivia sering mengubah
+    // beberapa barang berurutan dari hasil cari yang sama.
+    const qSimpan = $q.value, ySimpan = window.scrollY;
+    sortStore();
+    persist(); pushRemote(); closeEdit();
+    $q.value = qSimpan; render(qSimpan);
+    window.scrollTo(0, ySimpan);
+  });
 
 document.getElementById('del').addEventListener('click', ()=>{
   if(editingIdx < 0) return;
