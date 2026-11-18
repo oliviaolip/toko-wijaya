@@ -80,7 +80,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 <button id="add" title="Tambah barang baru">&plus;</button>
 <footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
 
-<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v7</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah. URL ini ikut tersimpan di dalam alamat halaman, jadi tidak hilang walau data Chrome dibersihkan &mdash; tekan <b>Salin link</b> lalu simpan link itu sebagai bookmark.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v8</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Alamat skrip <b>sudah tertanam di dalam aplikasi</b>, jadi tidak perlu diisi lagi &mdash; tutup tab, buka dari WhatsApp/LINE, atau ganti HP pun tetap tersambung. Kotak di bawah hanya untuk mengganti alamat skrip kalau Sheet-nya pindah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
       <button id="copyLink" class="grey">Salin link</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
   <div class="sheet">
     <h2>Pindah data ke HP lain</h2>
@@ -320,6 +320,12 @@ if(location.hash === '#test'){
 // ===== sinkron otomatis ke Google Sheets (Apps Script) =====
 const RKEY = 'tokoWijayaRemoteUrl';
 const QKEY = 'd';   // ?d=<url /exec> ikut di alamat halaman
+const OFF_URL = 'off';
+// Alamat Web App Apps Script Toko Wijaya, tertanam di file. Urutan sumber:
+// 1) ?d= di alamat halaman  2) URL yang pernah disimpan di HP  3) bawaan di bawah ini.
+// Bawaan ini yang bikin setelan tidak pernah hilang: browser di dalam aplikasi chat
+// (WhatsApp/LINE) punya penyimpanan sendiri, terpisah dari Chrome, jadi localStorage saja bocor.
+const RURL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwvmvnfpB-qsBJBbHY8QuRgOhjx4KYi86EIhE95lwT3GamwbZSRilapIyxmixjlvjCD_g/exec';
 function urlDariAlamat(){
   try{ return (new URLSearchParams(location.search).get(QKEY) || '').trim(); }catch(e){ return ''; }
 }
@@ -330,9 +336,11 @@ function tulisAlamat(v){
     history.replaceState(null, '', u.pathname + u.search + u.hash);
   }catch(e){}
 }
-let RURL = urlDariAlamat() || (localStorage.getItem(RKEY) || '');
-if(urlDariAlamat()){ try{ localStorage.setItem(RKEY, RURL); }catch(e){} }
-if(RURL) tulisAlamat(RURL);   // alamat halaman selalu membawa setelan, jadi aman walau data situs dibersihkan
+function savedUrl(){ try{ return (localStorage.getItem(RKEY) || '').trim(); }catch(e){ return ''; } }
+const _saved = savedUrl();
+let RURL = urlDariAlamat() || (_saved === OFF_URL ? '' : _saved) || RURL_DEFAULT;
+try{ localStorage.setItem(RKEY, RURL || OFF_URL); }catch(e){}
+if(RURL === RURL_DEFAULT || urlDariAlamat()) tulisAlamat(RURL);
 let busy = false;
 const $sync = document.getElementById('sync');
 const $m3 = document.getElementById('modal3');
@@ -389,7 +397,7 @@ document.getElementById('closeCfg').addEventListener('click', ()=> $m3.classList
 $m3.addEventListener('click', e=>{ if(e.target===$m3) $m3.classList.remove('on'); });
 document.getElementById('saveUrl').addEventListener('click', ()=>{
   const v = document.getElementById('f-url').value.trim();
-  RURL = v; try{ localStorage.setItem(RKEY, v); }catch(e){}
+  RURL = v; try{ localStorage.setItem(RKEY, v || OFF_URL); }catch(e){}
   tulisAlamat(v);
   setSync(v? 'ok':'', v? 'online':'off');
   document.getElementById('cfgMsg').textContent = v ? 'URL disimpan. Menguji koneksi...' : 'Sinkron dimatikan.';
@@ -407,7 +415,7 @@ document.getElementById('copyLink').addEventListener('click', async ()=>{
   }
 });
 document.getElementById('clearUrl').addEventListener('click', ()=>{
-  RURL=''; try{ localStorage.removeItem(RKEY); }catch(e){} tulisAlamat(''); setSync('', 'off');
+  RURL=''; try{ localStorage.setItem(RKEY, OFF_URL); }catch(e){} tulisAlamat(''); setSync('', 'off');
   document.getElementById('f-url').value='';
   document.getElementById('cfgMsg').textContent='Sinkron dimatikan. Aplikasi jalan mandiri di HP ini.';
 });
