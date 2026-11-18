@@ -44,7 +44,9 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px sol
 .sheet h2{margin:0 0 10px;font-size:17px}
 label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 .sheet input{width:100%;font-size:17px;padding:10px 11px;border:1px solid #ccc;border-radius:10px;color:#111}
-.srow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.srow{display:flex;gap:5px;align-items:center;margin-bottom:6px}
+.srow .dh{flex:0 0 18px;height:34px;line-height:34px;text-align:center;color:#9a9a9a;font-size:15px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:6px;background:#f6f6f6}
+.srow.dragging{opacity:.65;background:#eefaf0;border-radius:10px}
 .srow input.u{flex:1 1 34%}
 .srow input.p{flex:1 1 26%;text-align:right}
 .srow input.p2{flex:1 1 26%;text-align:right}
@@ -78,7 +80,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 <button id="add" title="Tambah barang baru">&plus;</button>
 <footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
 
-<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v5</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v6</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
   <div class="sheet">
     <h2>Pindah data ke HP lain</h2>
     <p style="font-size:13px;color:#555;margin:0 0 8px">Tekan <b>Salin</b> di HP ini, kirim teksnya ke HP kedua (WhatsApp/chat), lalu di HP kedua tekan <b>Tempel &amp; Simpan</b>.</p>
@@ -98,7 +100,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
     <input id="f-nama" placeholder="cth: Mika 5 VIP">
     <label>Keterangan (kemasan)</label>
     <input id="f-ket" placeholder="cth: 15 pack / 1500">
-    <label>Ukuran &amp; harga</label>
+    <label>Ukuran &amp; harga <span style="font-weight:400;color:#8a8a8a">— geser &#10495; untuk atur urutan</span></label>
     <div id="rows"></div>
     <button id="addRow" type="button">+ tambah ukuran</button>
     <div class="acts">
@@ -175,13 +177,35 @@ function addRow(s){
   s = s || {};
   const div = document.createElement('div');
   div.className = 'srow';
-  div.innerHTML = `<input class="u" placeholder="ukuran" value="${s.u ?? ''}">
+  div.innerHTML = `<span class="dh" title="geser untuk pindah urutan">&#10495;</span>
+                   <input class="u" placeholder="ukuran" value="${s.u ?? ''}">
                    <input class="p2" inputmode="numeric" placeholder="modal" value="${s.m ?? ''}">
                    <input class="p" inputmode="numeric" placeholder="harga jual" value="${s.j1 ?? ''}">
                    <button type="button">\u00d7</button>`;
   div.querySelector('button').addEventListener('click', ()=> div.remove());
+  div.querySelector('.dh').addEventListener('pointerdown', e=>{
+    e.preventDefault();
+    dragEl = div; div.classList.add('dragging');
+  });
   $rows.appendChild(div);
 }
+
+// Geser baris ukuran: tahan ikon di kiri, tarik naik/turun. Urutan dibaca saat Simpan.
+let dragEl = null;
+document.addEventListener('pointermove', e=>{
+  if(!dragEl) return;
+  const y = e.clientY, rows = [...$rows.children].filter(r=> r !== dragEl);
+  let after = null;
+  rows.forEach(r=>{ const b = r.getBoundingClientRect(); if(y > b.top + b.height/2) after = r; });
+  if(after){ if(dragEl.previousElementSibling !== after) after.after(dragEl); }
+  else if(dragEl !== $rows.firstElementChild) $rows.prepend(dragEl);
+}, {passive:true});
+document.addEventListener('pointerup', ()=>{
+  if(dragEl){ dragEl.classList.remove('dragging'); dragEl = null; }
+});
+document.addEventListener('pointercancel', ()=>{
+  if(dragEl){ dragEl.classList.remove('dragging'); dragEl = null; }
+});
 
 $list.addEventListener('click', e=>{
   const c = e.target.closest('.card');
