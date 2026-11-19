@@ -80,7 +80,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 <button id="add" title="Tambah barang baru">&plus;</button>
 <footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
 
-<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v8</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Alamat skrip <b>sudah tertanam di dalam aplikasi</b>, jadi tidak perlu diisi lagi &mdash; tutup tab, buka dari WhatsApp/LINE, atau ganti HP pun tetap tersambung. Kotak di bawah hanya untuk mengganti alamat skrip kalau Sheet-nya pindah.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v9</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Alamat skrip disimpan <b>di HP ini saja</b>, tidak pernah ditulis di dalam file, jadi tidak bisa dibaca orang lain dari link aplikasinya. Setelah diisi sekali: tekan <b>Salin link</b>, lalu buka link itu <b>di Chrome</b> dan simpan sebagai bookmark &mdash; setelan ikut terbawa dan tidak hilang walau tab ditutup. Jangan dibuka dari dalam WhatsApp/LINE (browser di dalam chat tidak mengingat setelan).</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
       <button id="copyLink" class="grey">Salin link</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
   <div class="sheet">
     <h2>Pindah data ke HP lain</h2>
@@ -321,11 +321,9 @@ if(location.hash === '#test'){
 const RKEY = 'tokoWijayaRemoteUrl';
 const QKEY = 'd';   // ?d=<url /exec> ikut di alamat halaman
 const OFF_URL = 'off';
-// Alamat Web App Apps Script Toko Wijaya, tertanam di file. Urutan sumber:
-// 1) ?d= di alamat halaman  2) URL yang pernah disimpan di HP  3) bawaan di bawah ini.
-// Bawaan ini yang bikin setelan tidak pernah hilang: browser di dalam aplikasi chat
-// (WhatsApp/LINE) punya penyimpanan sendiri, terpisah dari Chrome, jadi localStorage saja bocor.
-const RURL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwvmvnfpB-qsBJBbHY8QuRgOhjx4KYi86EIhE95lwT3GamwbZSRilapIyxmixjlvjCD_g/exec';
+// Alamat Web App Apps Script TIDAK ditanam di file: siapa pun yang membuka halaman
+// ini bisa membacanya lalu mengacak isi Sheet. Sumber setelan hanya 2:
+// 1) ?d= di alamat halaman (link bookmark)  2) yang tersimpan di HP ini.
 function urlDariAlamat(){
   try{ return (new URLSearchParams(location.search).get(QKEY) || '').trim(); }catch(e){ return ''; }
 }
@@ -338,9 +336,9 @@ function tulisAlamat(v){
 }
 function savedUrl(){ try{ return (localStorage.getItem(RKEY) || '').trim(); }catch(e){ return ''; } }
 const _saved = savedUrl();
-let RURL = urlDariAlamat() || (_saved === OFF_URL ? '' : _saved) || RURL_DEFAULT;
+let RURL = urlDariAlamat() || (_saved === OFF_URL ? '' : _saved);
 try{ localStorage.setItem(RKEY, RURL || OFF_URL); }catch(e){}
-if(RURL === RURL_DEFAULT || urlDariAlamat()) tulisAlamat(RURL);
+if(urlDariAlamat()) tulisAlamat(RURL);
 let busy = false;
 const $sync = document.getElementById('sync');
 const $m3 = document.getElementById('modal3');
