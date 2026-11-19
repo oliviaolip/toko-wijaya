@@ -80,7 +80,7 @@ label{display:block;font-size:13px;color:#555;margin:8px 0 3px}
 <button id="add" title="Tambah barang baru">&plus;</button>
 <footer>Ketuk barang untuk ubah nama / ukuran / harga</footer>
 
-<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v10</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Alamat skrip <b>dan kuncinya</b> disimpan di HP ini saja, tidak pernah ditulis di dalam file aplikasi. Tanpa kunci yang benar, skrip menolak membaca maupun menulis &mdash; jadi orang yang tahu alamatnya pun tidak bisa mengacak isi data. Setelah diisi sekali: tekan <b>Salin link</b>, buka link itu di Chrome, lalu simpan sebagai bookmark; setelan ikut terbawa dan tidak hilang walau tab ditutup.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec"><input id="f-kunci" placeholder="Kunci (sama dengan baris KUNCI di Apps Script)">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
+<div id="modal3">  <div class="sheet">    <h2>Sinkron otomatis (Google Sheets) <span style="font-size:11px;font-weight:400;color:#8a8a8a">app v7</span></h2>    <p style="font-size:13px;color:#555;margin:0 0 8px">Tempel <b>Web app URL</b> dari Google Apps Script (akhiran <b>/exec</b>). Setelah tersambung, semua HP yang memakai URL sama otomatis ikut berubah. URL ini ikut tersimpan di dalam alamat halaman, jadi tidak hilang walau data Chrome dibersihkan &mdash; tekan <b>Salin link</b> lalu simpan link itu sebagai bookmark.</p>    <input id="f-url" placeholder="https://script.google.com/macros/s/..../exec">    <div class="acts">      <button id="saveUrl">Simpan URL</button>      <button id="testUrl" class="grey">Uji koneksi</button>
       <button id="copyLink" class="grey">Salin link</button>      <button id="clearUrl" class="grey">Matikan</button>      <button id="closeCfg" class="grey">Tutup</button>    </div>    <p id="cfgMsg" style="font-size:12px;color:#555;margin-top:8px"></p>  </div></div><div id="modal2">
   <div class="sheet">
     <h2>Pindah data ke HP lain</h2>
@@ -319,35 +319,20 @@ if(location.hash === '#test'){
 
 // ===== sinkron otomatis ke Google Sheets (Apps Script) =====
 const RKEY = 'tokoWijayaRemoteUrl';
-const KKEY = 'tokoWijayaKunci';
-const QKEY = 'd';   // ?d=<url /exec>
-const QK   = 'k';   // ?k=<kunci>
-const OFF_URL = 'off';
-// URL dan kunci TIDAK ditanam di file: siapa pun yang membuka halaman ini bisa
-// membacanya lalu mengacak isi Sheet. Sumber setelan hanya 2:
-// 1) alamat halaman (?d= dan ?k= ikut bookmark)  2) simpanan di HP ini.
-function paramDariAlamat(nama){
-  try{ return (new URLSearchParams(location.search).get(nama) || '').trim(); }catch(e){ return ''; }
+const QKEY = 'd';   // ?d=<url /exec> ikut di alamat halaman
+function urlDariAlamat(){
+  try{ return (new URLSearchParams(location.search).get(QKEY) || '').trim(); }catch(e){ return ''; }
 }
-function tulisAlamat(v, k){
+function tulisAlamat(v){
   try{
     const u = new URL(location.href);
     if(v) u.searchParams.set(QKEY, v); else u.searchParams.delete(QKEY);
-    if(k) u.searchParams.set(QK, k); else u.searchParams.delete(QK);
     history.replaceState(null, '', u.pathname + u.search + u.hash);
   }catch(e){}
 }
-function simpanan(nama){ try{ return (localStorage.getItem(nama) || '').trim(); }catch(e){ return ''; } }
-function bisaSimpan(){
-  try{ localStorage.setItem('_uji', '1'); localStorage.removeItem('_uji'); return true; }
-  catch(e){ return false; }
-}
-const STORAGE_OK = bisaSimpan();
-const _saved = simpanan(RKEY);
-let RURL = paramDariAlamat(QKEY) || (_saved === OFF_URL ? '' : _saved);
-let KUNCI = paramDariAlamat(QK) || simpanan(KKEY);
-try{ localStorage.setItem(RKEY, RURL || OFF_URL); if(KUNCI) localStorage.setItem(KKEY, KUNCI); }catch(e){}
-if(paramDariAlamat(QKEY)) tulisAlamat(RURL, KUNCI);
+let RURL = urlDariAlamat() || (localStorage.getItem(RKEY) || '');
+if(urlDariAlamat()){ try{ localStorage.setItem(RKEY, RURL); }catch(e){} }
+if(RURL) tulisAlamat(RURL);   // alamat halaman selalu membawa setelan, jadi aman walau data situs dibersihkan
 let busy = false;
 const $sync = document.getElementById('sync');
 const $m3 = document.getElementById('modal3');
@@ -357,27 +342,14 @@ function setSync(state, text){
   $sync.className = 'sync' + (state ? ' ' + state : '');
   $sync.textContent = text;
 }
-function pesanKunciSalah(){
-  alert('Kunci tidak cocok. Samakan isi kotak Kunci di aplikasi dengan baris KUNCI di Apps Script, lalu Simpan URL.');
-}
 
 async function pullRemote(manual){
   if(!RURL || busy) return;
-  if(!KUNCI){
-    setSync('bad', 'kunci kosong');
-    if(manual) alert('Isi juga kotak Kunci di ⚙. Tanpa kunci, skrip menolak membaca data.');
-    return;
-  }
   busy = true;
   try{
-    const sep = RURL.includes('?') ? '&' : '?';
-    const r = await fetch(RURL + sep + 't=' + Date.now() + '&k=' + encodeURIComponent(KUNCI));
-    const arr = JSON.parse(await r.text());
-    if(arr && arr.ok === false){
-      setSync('bad', arr.err === 'kunci' ? 'kunci salah' : 'ditolak');
-      if(manual){ if(arr.err === 'kunci') pesanKunciSalah(); else alert('Skrip menolak: ' + arr.err); }
-      return;
-    }
+    const r = await fetch(RURL + (RURL.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const txt = await r.text();
+    const arr = JSON.parse(txt);
     if(Array.isArray(arr) && arr.length){
       if(JSON.stringify(arr) !== JSON.stringify(STORE)){
         STORE = arr; sortStore(); persist(); render($q.value);
@@ -400,16 +372,9 @@ async function pullRemote(manual){
 }
 
 async function pushRemote(){
-  if(!RURL || !KUNCI) return;
+  if(!RURL) return;
   try{
-    const r = await fetch(RURL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-                                body: JSON.stringify({kunci: KUNCI, data: STORE})});
-    let res = null;
-    try{ res = JSON.parse(await r.text()); }catch(e){}
-    if(res && res.ok === false){
-      setSync('bad', res.err === 'kunci' ? 'kunci salah' : 'gagal kirim');
-      return;
-    }
+    await fetch(RURL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(STORE)});
     setSync('ok','tersimpan');
     setTimeout(()=> setSync('ok','online'), 2000);
   }catch(e){ setSync('bad','gagal kirim'); }
@@ -417,33 +382,24 @@ async function pushRemote(){
 
 document.getElementById('cfg').addEventListener('click', ()=>{
   document.getElementById('f-url').value = RURL;
-  document.getElementById('f-kunci').value = KUNCI;
-  let msg = RURL ? 'Sinkron aktif.' : 'Belum tersambung. Aplikasi jalan mandiri di HP ini.';
-  if(!STORAGE_OK) msg += ' Chrome di HP ini memblokir penyimpanan aplikasi: pakai tombol Salin link lalu simpan link itu sebagai bookmark.';
-  document.getElementById('cfgMsg').textContent = msg;
+  document.getElementById('cfgMsg').textContent = RURL ? 'Sinkron aktif.' : 'Belum tersambung. Aplikasi jalan mandiri di HP ini.';
   $m3.classList.add('on');
 });
 document.getElementById('closeCfg').addEventListener('click', ()=> $m3.classList.remove('on'));
 $m3.addEventListener('click', e=>{ if(e.target===$m3) $m3.classList.remove('on'); });
 document.getElementById('saveUrl').addEventListener('click', ()=>{
   const v = document.getElementById('f-url').value.trim();
-  const k = document.getElementById('f-kunci').value.trim();
-  RURL = v; KUNCI = k;
-  try{ localStorage.setItem(RKEY, v || OFF_URL); localStorage.setItem(KKEY, k); }catch(e){}
-  tulisAlamat(v, k);
+  RURL = v; try{ localStorage.setItem(RKEY, v); }catch(e){}
+  tulisAlamat(v);
   setSync(v? 'ok':'', v? 'online':'off');
-  document.getElementById('cfgMsg').textContent = v ? 'Disimpan. Menguji koneksi...' : 'Sinkron dimatikan.';
+  document.getElementById('cfgMsg').textContent = v ? 'URL disimpan. Menguji koneksi...' : 'Sinkron dimatikan.';
   if(v) pullRemote(true);
 });
 document.getElementById('testUrl').addEventListener('click', ()=> pullRemote(true));
 document.getElementById('copyLink').addEventListener('click', async ()=>{
+  const link = RURL ? (()=>{ const u = new URL(location.href); u.searchParams.set(QKEY, RURL); return u.href; })() : location.href;
   const msg = document.getElementById('cfgMsg');
-  if(!RURL){ msg.textContent = 'Isi URL dulu, baru link bisa disalin.'; return; }
-  const u = new URL(location.href);
-  u.searchParams.set(QKEY, RURL);
-  if(KUNCI) u.searchParams.set(QK, KUNCI);
-  const link = u.href;
-  try{ await navigator.clipboard.writeText(link); msg.textContent = 'Link disalin. Buka di Chrome lalu simpan sebagai bookmark.'; }
+  try{ await navigator.clipboard.writeText(link); msg.textContent = 'Link disalin. Simpan sebagai bookmark / kirim ke HP lain.'; }
   catch(e){
     if(navigator.share){ try{ await navigator.share({url:link, title:'Cari Harga Toko Wijaya'}); msg.textContent='Link dibagikan.'; return; }catch(_e){} }
     msg.textContent = 'Tekan lama kotak URL di bawah untuk menyalin: ' + link;
@@ -451,11 +407,8 @@ document.getElementById('copyLink').addEventListener('click', async ()=>{
   }
 });
 document.getElementById('clearUrl').addEventListener('click', ()=>{
-  RURL=''; KUNCI='';
-  try{ localStorage.setItem(RKEY, OFF_URL); localStorage.removeItem(KKEY); }catch(e){}
-  tulisAlamat('', ''); setSync('', 'off');
+  RURL=''; try{ localStorage.removeItem(RKEY); }catch(e){} tulisAlamat(''); setSync('', 'off');
   document.getElementById('f-url').value='';
-  document.getElementById('f-kunci').value='';
   document.getElementById('cfgMsg').textContent='Sinkron dimatikan. Aplikasi jalan mandiri di HP ini.';
 });
 
